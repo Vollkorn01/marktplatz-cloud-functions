@@ -13,10 +13,17 @@ exports.sendNotificationToTopic = functions.firestore.document('CHATS/{chatId}/M
     let uid = event.after.get('user')._id;
     console.log('uid', uid)
 
+    let fcmToken;
+    const users = firestore().collection('USERS').doc(uid);
+    const doc = await users.get();
+    if (!doc.exists) {
+      console.log('No such document!');
+    } else {
+      console.log('Document data:', doc.data());
+      fcmToken = doc.data().fcmToken
+    }
 
-    //get userRef with fcmToken
-    var fcmToken = firestore.document('USERS/'+uid).get('fcmToken')
-    console.log('userRef', userRef)
+    if (fcmToken) {
     
 
     // var user = admin.auth().getUser('0wP2yO2hhqTWFXlDDeV3WLUS5dg1')
@@ -42,6 +49,8 @@ exports.sendNotificationToTopic = functions.firestore.document('CHATS/{chatId}/M
 
     let response = await admin.messaging().send(message);
     console.log(response);
+}
+console.log('fcmToken undefined, no notification sent to user', uid)
 });
 
 // exports.sendNotificationToFCMToken = functions.firestore.document('messages/{mUid}').onWrite(async (event) => {
