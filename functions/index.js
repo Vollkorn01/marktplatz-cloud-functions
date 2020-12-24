@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 const { firestore } = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
-exports.sendNotificationToTopic = functions.firestore.document('CHATS/{chatId}/MESSAGES/{messageId}').onWrite(async (event) => {
+exports.sendNotificationToTopic = functions.firestore.document('ITEMS/{itemID}/CHATS/{chatId}/MESSAGES/{messageId}').onWrite(async (event) => {
     //let docID = event.after.id;
     // let title = event.after.get('title');
 
@@ -28,15 +28,18 @@ exports.sendNotificationToTopic = functions.firestore.document('CHATS/{chatId}/M
 
     // who is the receiver?
     let uidReceiver;
-    let nameReceiver;
+    let nameSender;
     if (uidSender === uidRequester) {
       // send message to uidCreatedBy
       uidReceiver = uidCreatedBy
-      nameReceiver = nameCreatedBy
+      nameSender = nameRequester
+      console.log('SENDER === REQUESTER: uidSender, uidReceiver, nameSender', uidSender, uidReceiver, nameSender)
+
     } else if (uidSender === uidCreatedBy) {
       // send message to uidRequester
       uidReceiver = uidRequester
-      nameReceiver = nameRequester
+      nameSender = nameCreatedBy
+      console.log('SENDER === CREATOR: uidSender, uidReceiver, nameSender', uidSender, uidReceiver, nameSender)
     } else {
       console.log('Error: uidSender doesnt match, should never be the case')
     }
@@ -69,7 +72,7 @@ exports.sendNotificationToTopic = functions.firestore.document('CHATS/{chatId}/M
 
       var message = {
           notification: {
-              title: nameReceiver,
+              title: nameSender,
               body: messageText,
           },
           token: fcmToken,
